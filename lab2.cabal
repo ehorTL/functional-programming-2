@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0c8fa86d6d189f33744516d64323b1f897bbb41ca90eb433a896ae0fff0a3bbe
+-- hash: 0708f34abb6b817ee3e15491d5f2a7da22552cc4877875688a83d9de84c30f4c
 
 name:           lab2
 version:        0.1.0.0
@@ -28,6 +28,7 @@ source-repository head
 library
   exposed-modules:
       CommandLineInterface
+      Demo
       Integration
   other-modules:
       Paths_lab2
@@ -35,7 +36,6 @@ library
       src
   build-depends:
       base >=4.7 && <5
-    , hint
     , parallel
   default-language: Haskell2010
 
@@ -48,7 +48,6 @@ executable lab2-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , hint
     , lab2
     , parallel
   default-language: Haskell2010
@@ -63,7 +62,6 @@ test-suite lab2-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , hint
     , lab2
     , parallel
   default-language: Haskell2010
