@@ -3,6 +3,7 @@
 module Integration where
 
 import Control.Parallel
+import Debug.Trace
 
 {-|
  Integration with trapezoidal rule (https://en.wikipedia.org/wiki/Trapezoidal_rule).
@@ -22,10 +23,10 @@ integrate f a b n = let
  Parallel algorithm.
 -}
 integratePar f a b n threads_number = let
-    nPerSegm =  n / threads_number
+    nPerSegm = n / threads_number
     dSegmLen = (b-a) / threads_number
     integrateInner f' a' b' n' curThread' maxThread'
-        | curThread' == (maxThread'-1) = integrate f' a' b' n'
+        | curThread' == (maxThread'-1) = integrate f' (b' - dSegmLen) b' n'
         | otherwise = par i1 (pseq i2 (i1 + i2)) where
             i1 = integrate f' (a' + curThread'*dSegmLen) (a' + curThread'*dSegmLen + dSegmLen) nPerSegm
             i2 = integrateInner f' a' b' nPerSegm (curThread'+1) maxThread'
@@ -82,12 +83,17 @@ integrateWithEpsPar f a b n eps = let
                 integrateWithEpsInner f a b (n*2) eps curEps
     in integrateWithEpsInner f a b n eps 1000
 
--- integrateWithEpsParAll f a b n eps threads = let
---     integrateWithEpsInner f a b n eps prevEps = let
---         res1 = integratePar f a b n threads
---         res2 = integratePar f a b (n*2) threads
---         curEps = par res1 (pseq res2 (abs $ res1 - res2))
---         in if (abs curEps <= eps) then res2 else 
---             if (curEps > prevEps) then res1 else 
---                 integrateWithEpsInner f a b (n*2) eps curEps
---     in integrateWithEpsInner f a b n eps 1000
+
+{-|
+    Parallel version of 'integrateWithEps' function.
+    Multithreading is used in error approximation and in summation.
+-}
+integrateWithEpsParAll f a b n eps threads = let
+    integrateWithEpsInner f a b n eps prevEps = let
+        res1 = integratePar f a b n threads
+        res2 = integratePar f a b (n*2) threads
+        curEps = par res1 (pseq res2 (abs $ res1 - res2))
+        in if (abs curEps <= eps) then res2 else 
+            if (curEps > prevEps) then res1 else 
+                integrateWithEpsInner f a b (n*2) eps curEps
+    in integrateWithEpsInner f a b n eps 1000
